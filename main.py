@@ -1,12 +1,14 @@
 import sys
+from urllib import request
 import json
 from pathlib import Path
 import os
+import re
 import nltk
 from nltk.stem.snowball import SnowballStemmer
 from bs4 import BeautifulSoup
 from collections import defaultdict
-from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize import RegexpTokenizer, sent_tokenize, word_tokenize
 
 #INVERSE INDEX
 # TODO: keep track of when to write to disc
@@ -18,19 +20,20 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 # TODO: Query searching
 # TODO: tf-idf function
 
-
 class inverseIndex():
 
     def __init__(self, directory):
         self.docCounter = 0
         self.fileCounter = 0
         self.directory = directory
+        self.I = defaultdict(list)
 
         # use this to write to disc. every 33% we write to disc
         self.fileTotal3 = self.fileTotalFcn(self.directory)
         self.fileTotal2 = int(2 * self.fileTotal3/3)
         self.fileTotal1 = int(self.fileTotal3/3)
 
+        self.run()
     # gets the total number of files in the directory
     def fileTotalFcn(self, directory):
         asdf = Path(directory).rglob("*.json")
@@ -57,25 +60,32 @@ class inverseIndex():
             self.docCounter += 1
             self.fileCounter += 1
 
+    def run(self):
+        self.indexFiles()
+
     def indexBuilder(self, file):
         # our stemmer method
         snow_stemmer = SnowballStemmer(language='english')
 
-        # where to store our inverted index
         # TODO: need to clear after every write to disc
-        I = defaultdict(list)
-
 
         f = open(file)
         data = json.load(f)
 
-
         # tokenization
         htmlText = data['content']
-        tokenized = BeautifulSoup(htmlText, "html.parser")
+
+        tokenized = BeautifulSoup(htmlText, "lxml").get_text()
+        retList = word_tokenize(tokenized)
 
         # stemmer
-        completeToken = set(snow_stemmer.stem(tokenized))
+        #asdf
+
+        # reset newIndex
+        newIndex = set()
+        for thing in retList:
+            x = (snow_stemmer.stem(str(thing)))
+            newIndex.add(x)
 
         # dictionary structure
         # {"token":[list]}
@@ -86,34 +96,44 @@ class inverseIndex():
         #example
         # [4, 0, 7, 62, 88]
 
-        for token in completeToken:
-            if token not in I.keys():
-                I[token] = [0]
-            I[token].append(self.docCounter)
-            I[token][0] += 1
+        #asdf
+        for token in newIndex:
+            #print(token)
+            if token not in self.I.keys():
+                self.I[token] = [0]
+            else:
+                self.I[token].append(self.docCounter)
+                self.I[token][0] += 1
 
 
         # write to file conditional
-        if self.fileCounter == int(self.fileTotal1):
+        #if self.fileCounter == int(self.fileTotal1):
+        if self.fileCounter == 500:
+            print(self.I)
+            #I = defaultdict(list)
             return
             # write to file
             #clear dictionary
             #merge option 1
 
         if self.fileCounter == int(self.fileTotal2):
+            # print(I)
+            # I = defaultdict(list)
             return
             #write to file
             #clear dictionary
             #merge option 1
 
         if self.fileCounter == int(self.fileTotal3):
+            # print(I)
+            # I = defaultdict(list)
             return
             #write to file
             #clear dictionary
             # merge option 1
         #call merge function option2
 
-
+#asdfasdfasdf
 
 
 
@@ -132,4 +152,4 @@ if __name__ == "__main__":
     #print(data['url'])
     #file.close()
 
-    tester = inverseIndex()
+    tester = inverseIndex(r"C:\Users\srb71\Documents\CS121 Test Data\ANALYST")
