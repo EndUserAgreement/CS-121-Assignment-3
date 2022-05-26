@@ -1,15 +1,21 @@
 import sys
-from urllib import request
 import json
-from pathlib import Path
 import os
 import re
 import nltk
+import math
+from urllib import request
+from pathlib import Path
 from nltk.stem.snowball import SnowballStemmer
 from bs4 import BeautifulSoup
 from collections import defaultdict
 from nltk.tokenize import RegexpTokenizer, sent_tokenize, word_tokenize
+from requests import head
+from simhash import Simhash, SimhashIndex
 
+LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
+letterhold = defaultdict(letters)
+stemmer = SnowballStemmer(language="English")
 #INVERSE INDEX
 # TODO: keep track of when to write to disc
 # TODO: merging and writing to disc
@@ -19,6 +25,42 @@ from nltk.tokenize import RegexpTokenizer, sent_tokenize, word_tokenize
 #QUERY FUNCTIONS
 # TODO: Query searching
 # TODO: tf-idf function
+
+""" 
+class Posting:
+    def __init__(self, docid, tfidf, fields):
+        self.docid = docid
+        self.tfidf = tfidf # use freq counts for now
+        self.fields = fields
+"""
+ 
+
+ #Returns a list of tf-ids for each word in document
+def process_tfid(document: str):
+    document = word_tokenize(document.lower().replace('\\',''))
+    stemmed = [stemmer.stem(word) for word in document]
+    tfids = {}
+    for word in stemmed:
+        if word in tfids: 
+            tfids[word] += 1
+        else: 
+            tfids[word] = 1
+    for word in tfids:
+        tfids[word] = math.log(tfids[word]) + 1
+    return tfids
+
+#parse through the json file and extract all words, return whole doc as one large string
+def parse_json(path):
+    with open(path, "r") as read_file:
+        file = json.load(read_file)
+    soup = BeautifulSoup(file["content"], "lxml")
+    for word in soup.find_all(['script', 'style']):
+        word.extract()
+    content = soup.get_text(" ")
+
+    headers = soup.find_all(['h1', 'h2', 'h3', 'b', 'a'], text=True)
+    headers = ' '.join([e.string for e in headers])
+    return content + " " + headers
 
 class inverseIndex():
 
