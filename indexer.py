@@ -1,19 +1,14 @@
-import sys
-import json #
-import os#
-import re#
-import math#
-import lxml#
-import pprint #
-from urllib import request
-from pathlib import Path
+import re
+import json
+import lxml
+import os
+import math
+import pprint
 from nltk.stem.snowball import SnowballStemmer#
 from bs4 import BeautifulSoup#
-from collections import defaultdict
 from nltk.tokenize import word_tokenize
 
-
-#from simhash import Simhash, SimhashIndex       #from https://github.com/leonsim/simhash     CHECK THIS
+#from simhash import Simhash, SimhashIndex   CHECK THIS
 
 LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
 #letterhold = defaultdict(letters)
@@ -34,7 +29,7 @@ class Posting:
 
 #parse through the json file and extract all words, return whole doc as one large string
 def parse_json(path):
-    with open(path, "r") as read_file:
+    with open(path, "r", encoding="utf-8") as read_file: # CHANGED ENCODING, CAN REMOVE LATER
         file = json.load(read_file)
     soup = BeautifulSoup(file["content"], "lxml")
     for word in soup.find_all(['script', 'style']):
