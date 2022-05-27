@@ -87,7 +87,7 @@ def processFolder(path):
 
 #starts the processing of the DEV file
 def process():
-    os.chdir(r"C:\Users\srb71\Documents\CS121 Test Data\MYTEST")
+    os.chdir(r"C:\Users\srb71\Documents\CS121 Test Data\DEV")
     index_count = 1
     for f in os.listdir(os.getcwd()):
         if os.path.isdir(f):
@@ -136,6 +136,7 @@ def merge():
         with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + letter + ".txt", "w", encoding="utf-8") as opfile:
             wordline = 1
             for word in lettersdict:
+                word.encode('utf-8')
                 if word.endswith("\\"):
                     print("{\"" + word + "\\" + "\": " + str(lettersdict[word]) + "}", file=opfile)
                 else:
@@ -143,10 +144,11 @@ def merge():
                 with open(r"word_number.txt", "a") as wordnum:
                     if word.endswith("\\"):
                         print(word + "\\" + " " + str(wordline), file=wordnum)
-                    elif word == '\x9d':
-                        print("")
                     else:
-                        print(word + " " + str(wordline), file=wordnum)
+                        try:
+                            print(word + " " + str(wordline), file=wordnum)
+                        except:
+                            print("")
 
                 wordline +=1
 
@@ -173,12 +175,6 @@ def getIndexes():
     return index
 
 if __name__ == "__main__":
-    #file = str(sys.argv[1])
-    # file = r"C:\Users\David Lee\Desktop\DEV"
-    # indexBuilder(file)
-    #data = json.load(file)
-    #print(data['url'])
-    #file.close()
     #path = "C:\Users\srb71\Documents\CS121 Test Data\ANALYST"
     createIndex()
     merge()

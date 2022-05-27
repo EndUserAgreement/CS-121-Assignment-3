@@ -173,8 +173,8 @@ def make_partial_letter_index(letter: str, partial_index: str):
 def get_indices():
     indices = []
     temp_partial_index_count = 1
-    while(os.path.exists("indexes/partial_index" + str(temp_partial_index_count) + ".txt")):
-        indices.append("indexes/partial_index" + str(temp_partial_index_count) + ".txt")
+    while(os.path.exists(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + str(temp_partial_index_count) + ".txt")):
+        indices.append(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + str(temp_partial_index_count) + ".txt")
         temp_partial_index_count += 1
     return indices
 
