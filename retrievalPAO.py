@@ -59,10 +59,6 @@ def get_top_urls(top_doc_ids: list[tuple], urls: list) -> list[tuple]:
 
     return top_urls
 
-def getindex():
-    index_file = r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index"
-    #if word 
-
 if __name__ == "__main__":
 
     # Get index

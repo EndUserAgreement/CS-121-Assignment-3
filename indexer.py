@@ -1,37 +1,27 @@
 import sys
-import json
-import os
-import re
-import nltk
-import math
-import lxml
-import pprint
+import json #
+import os#
+import re#
+import math#
+import lxml#
+import pprint #
 from urllib import request
 from pathlib import Path
-from nltk.stem.snowball import SnowballStemmer
-from bs4 import BeautifulSoup
+from nltk.stem.snowball import SnowballStemmer#
+from bs4 import BeautifulSoup#
 from collections import defaultdict
-from nltk.tokenize import RegexpTokenizer, sent_tokenize, word_tokenize
-from requests import head
+from nltk.tokenize import word_tokenize
 
-nltk.download('punkt')
+
 #from simhash import Simhash, SimhashIndex       #from https://github.com/leonsim/simhash     CHECK THIS
 
-#LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
+LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
 #letterhold = defaultdict(letters)
 docID=[]
 invertedIndex = {}
 #hashed = SimhashIndex([], k=1)
 stemmer = SnowballStemmer(language="english")
-#INVERSE INDEX
-# TODO: keep track of when to write to disc
-# TODO: merging and writing to disc
-# TODO: how to organize inverted index for better merging
-# TODO: what data structure for inverse index
 
-#QUERY FUNCTIONS
-# TODO: Query searching
-# TODO: tf-idf function
 
 """ 
 class Posting:
@@ -52,7 +42,7 @@ def parse_json(path):
     content = soup.get_text(" ")
 
     headers = soup.find_all(['h1', 'h2', 'h3', 'b', 'a'], text=True)
-    headers = ' '.join([e.string for e in headers])
+    headers = ' '.join([t.string for t in headers])
     return content + " " + headers
 
 
@@ -67,7 +57,7 @@ def process_tfid(document: str):
         else: 
             tfids[word] = 1
     for word in tfids:
-        tfids[word] = math.log(tfids[word]) + 1
+        tfids[word] = round(math.log(tfids[word]) + 1, 4)
     return tfids
 
 #assigns the tf scores to the document w/ the doc_id, then puts it into the index
@@ -92,26 +82,26 @@ def processFolder(path):
         #if len(hashed.get_near_dups(simhash_words)) <= 0:
             #hashed.add(site, simhash_words)
         tf_dict = process_tfid(word_file) # was indented
-        combine(tf_dict, docID) #was indented
+        combine(tf_dict, current_doc) #was indented
     os.chdir('..') #leave the current directory
 
-        
+#starts the processing of the DEV file
 def process():
-    os.chdir(r"C:\Users\srb71\Documents\CS121 Test Data\ANALYST")
+    os.chdir(r"C:\Users\srb71\Documents\CS121 Test Data\MYTEST")
     index_count = 1
     for f in os.listdir(os.getcwd()):
         if os.path.isdir(f):
             processFolder(f)
-        if len(invertedIndex>200000):
+        if len(invertedIndex) > 10000:
             writeToFile(index_count)
             index_count += 1
     if len(invertedIndex) > 0:
         writeToFile(index_count)
 
 def writeToFile(count: int):
-    with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes" + str(count) + ".txt", "w") as file:
+    with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + str(count) + ".txt", "w", encoding="utf-8") as file:
         file.write(str(invertedIndex))
-    clean_print()
+    #clean_print()
     invertedIndex.clear()
 
 
@@ -122,7 +112,7 @@ def createIndex():
     process()
     os.chdir("..")
 
-    with open(r"doc_id.txt", "w") as f:
+    with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\doc_id.txt", "w", encoding="utf-8") as f:
         f.write(str(docID))
 
 
@@ -133,6 +123,55 @@ def clean_print():
             print('\t', end = "")
             print(posting)
 
+
+def merge():
+    index_list = getIndexes() #change name
+    #start the splitting up of the index by letter, store the letter:line number in a seperate file
+    for letter in LETTERS:
+        print(letter)
+        lettersdict = {}
+        for index in index_list:
+            print(index)
+            lettersdict.update(makepartial(letter, index))
+        with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + letter + ".txt", "w", encoding="utf-8") as opfile:
+            wordline = 1
+            for word in lettersdict:
+                if word.endswith("\\"):
+                    print("{\"" + word + "\\" + "\": " + str(lettersdict[word]) + "}", file=opfile)
+                else:
+                    print("{\"" + word + "\": " + str(lettersdict[word]) + "}", file=opfile)
+                with open(r"word_number.txt", "a") as wordnum:
+                    if word.endswith("\\"):
+                        print(word + "\\" + " " + str(wordline), file=wordnum)
+                    elif word == '\x9d':
+                        print("")
+                    else:
+                        print(word + " " + str(wordline), file=wordnum)
+
+                wordline +=1
+
+def makepartial(letter:str, partialindex:str):
+    index = {}
+    with open(partialindex, "r", encoding="utf-8") as file:
+        tempindex = eval(file.read())
+    if letter != "":
+        for word in [key for key in tempindex.keys() if key.startswith(letter)]:
+            index[word] = tempindex[word]
+    else:
+        for word in [key for key in tempindex.keys() if key[:1] not in LETTERS]:
+            index[word] = tempindex[word]
+    return index
+
+
+def getIndexes():
+    index = []
+    indexCount = 1
+    while(os.path.exists(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + str(indexCount) + ".txt")):
+        index.append(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + str(indexCount) + ".txt")
+        indexCount += 1
+    print(index)
+    return index
+
 if __name__ == "__main__":
     #file = str(sys.argv[1])
     # file = r"C:\Users\David Lee\Desktop\DEV"
@@ -142,4 +181,5 @@ if __name__ == "__main__":
     #file.close()
     #path = "C:\Users\srb71\Documents\CS121 Test Data\ANALYST"
     createIndex()
+    merge()
     #clean_print()
