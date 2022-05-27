@@ -1,5 +1,6 @@
 import sys
 import json
+from tkinter.tix import INTEGER
 import requests
 import json #
 import os#
@@ -87,6 +88,7 @@ def lookup(input, exact):
         print(check)
         for num in check:
             print(num)
+            #int(num)
     #print(find)
 
 
