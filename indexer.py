@@ -87,7 +87,7 @@ def process():
     for f in os.listdir(os.getcwd()):
         if os.path.isdir(f):
             processFolder(f)
-        if len(invertedIndex) > 10000:
+        if len(invertedIndex) > 100000:
             writeToFile(index_count)
             index_count += 1
     if len(invertedIndex) > 0:
@@ -131,12 +131,11 @@ def merge():
         with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + letter + ".txt", "w", encoding="utf-8") as opfile:
             wordline = 1
             for word in lettersdict:
-                word.encode('utf-8')
                 if word.endswith("\\"):
                     print("{\"" + word + "\\" + "\": " + str(lettersdict[word]) + "}", file=opfile)
                 else:
                     print("{\"" + word + "\": " + str(lettersdict[word]) + "}", file=opfile)
-                with open(r"word_number.txt", "a") as wordnum:
+                with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\word_number.txt", "a") as wordnum:
                     if word.endswith("\\"):
                         print(word + "\\" + " " + str(wordline), file=wordnum)
                     else:
