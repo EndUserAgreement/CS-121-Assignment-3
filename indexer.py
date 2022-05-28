@@ -10,15 +10,15 @@ from nltk.tokenize import word_tokenize
 
 #from simhash import Simhash, SimhashIndex   CHECK THIS
 
-#LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
-LETTERS = ["g", ""]
+LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
+#LETTERS = ["gr", ""]
 #letterhold = defaultdict(letters)
 docID=[]
 invertedIndex = {}
 #hashed = SimhashIndex([], k=1)
 stemmer = SnowballStemmer(language="english")
 indexpath = r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes"
-datapath = r"C:\Users\srb71\Documents\CS121 Test Data\MYTEST"
+datapath = r"C:\Users\srb71\Documents\CS121 Test Data\DEV"
 
 """ 
 class Posting:
@@ -27,7 +27,6 @@ class Posting:
         self.tfidf = tfidf # use freq counts for now
         self.fields = fields
 """
- 
 
 #parse through the json file and extract all words, return whole doc as one large string
 def parse_json(path):
@@ -77,7 +76,7 @@ def combine(tf: dict, doc_id: int):
         else:
             invertedIndex[word] = {doc_id: tf[word]}
 
-
+#process the folder and all information inside
 def processFolder(path):
     print(path) # remove later
     #doc = parse_json(path)
@@ -101,7 +100,7 @@ def process():
     for f in os.listdir(os.getcwd()):
         if os.path.isdir(f):
             processFolder(f)
-        if len(invertedIndex) > 100:
+        if len(invertedIndex) > 200000:
             writeToFile(index_count)
             index_count += 1
     if len(invertedIndex) > 0:
@@ -174,7 +173,8 @@ def makepartial(letter:str, partialindex:str):
     if letter != "": #adds all keys that start with letter to a temp index, then returns it
         for word in [key for key in tempindex.keys() if key.startswith(letter)]:
             partindex[word] = tempindex[word]
-            print(word)
+            #print(word)
+            #print(tempindex[word])
     else: # if its a number
         for word in [key for key in tempindex.keys() if key[:1] not in LETTERS]:
             partindex[word] = tempindex[word]
@@ -194,4 +194,3 @@ if __name__ == "__main__":
     #path = "C:\Users\srb71\Documents\CS121 Test Data\ANALYST"
     createIndex()
     merge()
-    #clean_print()
