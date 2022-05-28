@@ -18,23 +18,31 @@ from bs4 import BeautifulSoup#
 from collections import defaultdict
 from nltk.tokenize import word_tokenize
 
-"""
-CHANGES MADE:
-- commented out tkinter import
-- downloaded 'punkt' from nltk because I was prompted to in order to run the file
-- prints out performance speed in milliseconds after query
-- 
-"""
 
+# Global variables
 stemmer = SnowballStemmer(language="english")
 doc_ids = None
 doc_ids_path = "/mnt/c/users/paolo/code/UCI/CS121/CS-121-Assignment-3/indexes/doc_id.txt" # Update the path to doc_id.txt, if necessary
+urls_path = "/mnt/c/users/paolo/code/UCI/CS121/CS-121-Assignment-3/urls.json"
 NUM_DOCUMENTS = 55393
 
 with open(doc_ids_path, "r") as text: 
     line = text.readline()
     doc_ids = eval(line)
 total_docs = len(doc_ids)
+
+with open(urls_path, "r") as json_file:
+    urls = json.load(json_file)
+
+
+def get_top_urls(scores, top=5):
+    scores = sorted(scores.items(), key=lambda key_value:key_value[1], reverse=True)
+    # print(scores[:top])
+    top_urls = list() # front of the list is the #1 ranked URL
+    for i in range(len(scores)):
+        top_urls.append(urls[scores[i][0]])
+    
+    return top_urls[:top]
 
 
 def get_posting(input, exact):
@@ -44,7 +52,7 @@ def get_posting(input, exact):
     return posting # return posting
 
 
-def get_results(input):
+def get_scores(input):
     """Using the lnc.ltc to ranks scores"""
 
     query_vector = defaultdict(int)
@@ -62,7 +70,11 @@ def get_results(input):
         # Calculate tf-idf for particular search word in input search query
         query_tf_raw = words.count(word) # raw term frequency (tf) for word
         query_tf_wt = math.log(query_tf_raw) + 1 # tf-weighted for word
-        query_idf = NUM_DOCUMENTS / math.log(len(posting)) # idf for word 
+        try:
+            query_idf = NUM_DOCUMENTS / math.log(len(posting)) if math.log(len(posting)) != 0 else 0 # idf for word 
+        except:
+            query_idf = 0
+
         query_tfidf = round(query_tf_wt * query_idf, 4) 
         query_vector[word] = query_tfidf
 
@@ -70,13 +82,13 @@ def get_results(input):
             document_vectors[doc_id][word] = tf
 
     # Normalize vectors
-    query_vector_length = math.sqrt(sum(list(map(lambda x:x**2, query_vector.values()))))
-    normalized_query_vector = {word:(tfidf/query_vector_length) for word, tfidf in query_vector.items()}
+    query_vector_length = math.sqrt(sum(list(map(lambda x:x**2, query_vector.values())))) 
+    normalized_query_vector = {word:(tfidf/query_vector_length) for word, tfidf in query_vector.items() if query_vector_length > 0}
     normalized_document_vectors = defaultdict(dict)
     for doc_id, doc_vector in document_vectors.items():
         doc_vector_length = math.sqrt(sum(list(map(lambda x:x**2, doc_vector.values()))))
         for word in doc_vector.keys():
-            normalized_document_vectors[doc_id][word] = document_vectors[doc_id][word]/doc_vector_length
+            normalized_document_vectors[doc_id][word] = document_vectors[doc_id][word]/doc_vector_length if doc_vector_length > 0 else 0
 
     
     # Calculate cosine scores by performing dot product of each query vector to each document vector
@@ -89,7 +101,6 @@ def get_results(input):
     # print(normalized_query_vector)
     # # print(document_vectors)
     # print(normalized_document_vectors)
-    # print(scores)
     return scores
 
 
@@ -109,14 +120,15 @@ def parse_index(letter, word):
 if __name__ == "__main__":
     query = input("Input Search Query: ")
     start_time = time.process_time() * 1000 # start time in milliseconds
-    print("Generating results for " + query)
-    # Get index
-    get_results(query)
+    print("Generating results for \'" + query + "\'...")
+    scores = get_scores(query)
+    top_urls = get_top_urls(scores)
     end_time = time.process_time() * 1000 # ending time in milliseconds
+    print("\nYour top", len(top_urls), "results")
+    for url in top_urls:
+        print(url)
     print("Elapsed time (ms):", end_time - start_time)   # performance speeds needs to be < 300 ms
-    index_file = "/mnt/c/users/paolo/code/UCI/CS121/CS-121-Assignment-3/urls.json" # Update the path to urls.json, if necessary
-    with open(index_file, "r") as json_file:
-        index = json.load(json_file)
+
     
 
     
