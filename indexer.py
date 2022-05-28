@@ -37,17 +37,11 @@ def parse_json(path):
     for word in soup.find_all(['script', 'style']):
         word.extract()
     content = soup.get_text(" ")
-        #print(content)
-    for letter in content:
-        if bool(re.match(r'[^\x20-\x7F]+',letter)) == True:
-            content.replace(letter,"")
+    content = re.sub(r'\W+', '', content)
+
     headers = soup.find_all(['h1', 'h2', 'h3', 'b', 'a'], text=True)
     headers = ' '.join([t.string for t in headers])
-    for word in headers:
-            #print(headers)
-        for letter in word:
-            if bool(re.match(r'[^\x20-\x7F]+',letter)) == True:
-                word.replace(letter,"")
+    headers= re.sub(r'\W+', '', headers)
     return content + " " + headers
 
 
@@ -57,9 +51,9 @@ def process_tfid(document: str):
     stemmed = [stemmer.stem(word) for word in document]
     tfids = {}
     for word in stemmed:
-        for letter in word:
-            if bool(re.match(r'[^\x20-\x7F]+',letter)) == True:
-                word.replace(letter,"")
+        #for letter in word:
+        #    if bool(re.match(r'[^\x20-\x7F]+',letter)) == True:
+        #        word.replace(letter,"")
         if word in tfids: 
             tfids[word] += 1
         else: 
