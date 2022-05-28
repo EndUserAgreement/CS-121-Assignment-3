@@ -184,8 +184,8 @@ def makepartial(letter:str, partialindex:str):
 def getIndexes():
     index = []
     indexCount = 1
-    while(os.path.exists(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + str(indexCount) + ".txt")):
-        index.append(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + str(indexCount) + ".txt")
+    while(os.path.exists(indexpath + "\index" + str(indexCount) + ".txt")):
+        index.append(indexpath + "\index" + str(indexCount) + ".txt")
         indexCount += 1
     print(index)
     return index
