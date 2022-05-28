@@ -102,17 +102,19 @@ def parse_index(letter, word):
         return {} # returns empty posting if not found in inverted index
 
 if __name__ == "__main__":
-    query = input("Input Search Query: ")
-    start_time = time.process_time() * 1000 # start time in milliseconds
-    print("Generating results for \'" + query + "\'...")
-    scores = get_scores(query)
-    top_urls = get_top_urls(scores)
-    end_time = time.process_time() * 1000 # ending time in milliseconds
-    print("\nYour top", len(top_urls), "results")
-    for url in top_urls:
-        print(url)
-    print("Elapsed time (ms):", end_time - start_time)   # performance speeds needs to be < 300 ms
-
+    while True:
+        query = input("Input Search Query (-1 to exit): ")
+        if query == "-1":
+            break
+        start_time = time.process_time() * 1000 # start time in milliseconds
+        print("Generating results for \'" + query + "\'...")
+        scores = get_scores(query)
+        top_urls = get_top_urls(scores)
+        end_time = time.process_time() * 1000 # ending time in milliseconds
+        print("\nYour top", len(top_urls), "results")
+        for url in top_urls:
+            print(url)
+        print("Elapsed time (ms):", end_time - start_time, "\n")   # performance speeds needs to be < 300 ms
     
 
     
