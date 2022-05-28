@@ -10,13 +10,15 @@ from nltk.tokenize import word_tokenize
 
 #from simhash import Simhash, SimhashIndex   CHECK THIS
 
-LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
+#LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
+LETTERS = ["g", ""]
 #letterhold = defaultdict(letters)
 docID=[]
 invertedIndex = {}
 #hashed = SimhashIndex([], k=1)
 stemmer = SnowballStemmer(language="english")
-
+indexpath = r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes"
+datapath = r"C:\Users\srb71\Documents\CS121 Test Data\MYTEST"
 
 """ 
 class Posting:
@@ -30,14 +32,23 @@ class Posting:
 #parse through the json file and extract all words, return whole doc as one large string
 def parse_json(path):
     with open(path, "r", encoding="utf-8") as read_file: # CHANGED ENCODING, CAN REMOVE LATER
+        #read_file.decode('utf-8-sig')
         file = json.load(read_file)
     soup = BeautifulSoup(file["content"], "lxml")
     for word in soup.find_all(['script', 'style']):
         word.extract()
     content = soup.get_text(" ")
-
+        #print(content)
+    for letter in content:
+        if bool(re.match(r'[^\x20-\x7F]+',letter)) == True:
+            content.replace(letter,"")
     headers = soup.find_all(['h1', 'h2', 'h3', 'b', 'a'], text=True)
     headers = ' '.join([t.string for t in headers])
+    for word in headers:
+            #print(headers)
+        for letter in word:
+            if bool(re.match(r'[^\x20-\x7F]+',letter)) == True:
+                word.replace(letter,"")
     return content + " " + headers
 
 
@@ -47,6 +58,9 @@ def process_tfid(document: str):
     stemmed = [stemmer.stem(word) for word in document]
     tfids = {}
     for word in stemmed:
+        for letter in word:
+            if bool(re.match(r'[^\x20-\x7F]+',letter)) == True:
+                word.replace(letter,"")
         if word in tfids: 
             tfids[word] += 1
         else: 
@@ -82,19 +96,19 @@ def processFolder(path):
 
 #starts the processing of the DEV file
 def process():
-    os.chdir(r"C:\Users\srb71\Documents\CS121 Test Data\MYTEST")
+    os.chdir(datapath)
     index_count = 1
     for f in os.listdir(os.getcwd()):
         if os.path.isdir(f):
             processFolder(f)
-        if len(invertedIndex) > 500:
+        if len(invertedIndex) > 100:
             writeToFile(index_count)
             index_count += 1
     if len(invertedIndex) > 0:
         writeToFile(index_count)
 
 def writeToFile(count: int):
-    with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + str(count) + ".txt", "w", encoding="utf-8") as file:
+    with open(indexpath + "\index" + str(count) + ".txt", "w", encoding="utf-8") as file:
         file.write(str(invertedIndex))
     #clean_print()
     invertedIndex.clear()
@@ -107,7 +121,7 @@ def createIndex():
     process()
     os.chdir("..")
 
-    with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\doc_id.txt", "w", encoding="utf-8") as f:
+    with open(indexpath + "\doc_id.txt", "w", encoding="utf-8") as f:
         f.write(str(docID))
 
 
@@ -124,18 +138,15 @@ def merge():
     #start the splitting up of the index by letter, store the letter:line number in a seperate file
     for letter in LETTERS:
         print(letter)
-        lettersdict = {}
-        for index in index_list:
-            print(index)
-            lettersdict.update(makepartial(letter, index))
-        with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\index" + letter + ".txt", "w", encoding="utf-8") as opfile:
+        lettersdict = makefull(letter, index_list)
+        with open(indexpath + "\index" + letter + ".txt", "w", encoding="utf-8") as opfile:
             wordline = 1
             for word in lettersdict:
                 if word.endswith("\\"):
                     print("{\"" + word + "\\" + "\": " + str(lettersdict[word]) + "}", file=opfile)
                 else:
                     print("{\"" + word + "\": " + str(lettersdict[word]) + "}", file=opfile)
-                with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\word_number.txt", "a", encoding="utf-8") as wordnum:
+                with open(indexpath + "\word_number.txt", "a", encoding="utf-8") as wordnum:
                     if word.endswith("\\"):
                         print(word + "\\" + " " + str(wordline), file=wordnum)
                     else:
@@ -145,14 +156,26 @@ def merge():
                             print("")
                 wordline +=1
 
+def makefull(letter:str, indexlist:list):
+    index = {}
+    for entry in indexlist:
+        print(entry)
+        temp = makepartial(letter, entry)
+        index.update(temp)
+        #print(index)
+    return index
+    
 def makepartial(letter:str, partialindex:str):
     partindex = {}
     with open(partialindex, "r", encoding="utf-8") as file:
         tempindex = eval(file.read())
-    if letter != "":
+    #print(tempindex)
+    #print(tempindex.keys())
+    if letter != "": #adds all keys that start with letter to a temp index, then returns it
         for word in [key for key in tempindex.keys() if key.startswith(letter)]:
             partindex[word] = tempindex[word]
-    else:
+            print(word)
+    else: # if its a number
         for word in [key for key in tempindex.keys() if key[:1] not in LETTERS]:
             partindex[word] = tempindex[word]
     return partindex
