@@ -82,12 +82,12 @@ def processFolder(path):
 
 #starts the processing of the DEV file
 def process():
-    os.chdir(r"C:\Users\srb71\Documents\CS121 Test Data\DEV")
+    os.chdir(r"C:\Users\srb71\Documents\CS121 Test Data\MYTEST")
     index_count = 1
     for f in os.listdir(os.getcwd()):
         if os.path.isdir(f):
             processFolder(f)
-        if len(invertedIndex) > 100000:
+        if len(invertedIndex) > 500:
             writeToFile(index_count)
             index_count += 1
     if len(invertedIndex) > 0:
@@ -135,7 +135,7 @@ def merge():
                     print("{\"" + word + "\\" + "\": " + str(lettersdict[word]) + "}", file=opfile)
                 else:
                     print("{\"" + word + "\": " + str(lettersdict[word]) + "}", file=opfile)
-                with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\word_number.txt", "a") as wordnum:
+                with open(r"C:\Users\srb71\Documents\GitHub\CS-121-Assignment-3\indexes\word_number.txt", "a", encoding="utf-8") as wordnum:
                     if word.endswith("\\"):
                         print(word + "\\" + " " + str(wordline), file=wordnum)
                     else:
@@ -143,20 +143,19 @@ def merge():
                             print(word + " " + str(wordline), file=wordnum)
                         except:
                             print("")
-
                 wordline +=1
 
 def makepartial(letter:str, partialindex:str):
-    index = {}
+    partindex = {}
     with open(partialindex, "r", encoding="utf-8") as file:
         tempindex = eval(file.read())
     if letter != "":
         for word in [key for key in tempindex.keys() if key.startswith(letter)]:
-            index[word] = tempindex[word]
+            partindex[word] = tempindex[word]
     else:
         for word in [key for key in tempindex.keys() if key[:1] not in LETTERS]:
-            index[word] = tempindex[word]
-    return index
+            partindex[word] = tempindex[word]
+    return partindex
 
 
 def getIndexes():
