@@ -11,7 +11,7 @@ from nltk.tokenize import word_tokenize
 #from simhash import Simhash, SimhashIndex   CHECK THIS
 
 LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
-#LETTERS = ["gr", ""]
+#LETTERS = ["i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ""]
 #letterhold = defaultdict(letters)
 docID=[]
 invertedIndex = {}
@@ -37,11 +37,11 @@ def parse_json(path):
     for word in soup.find_all(['script', 'style']):
         word.extract()
     content = soup.get_text(" ")
-    content = re.sub(r'\W+', '', content)
+    #content = re.sub(r'\W+', '', content)
 
     headers = soup.find_all(['h1', 'h2', 'h3', 'b', 'a'], text=True)
     headers = ' '.join([t.string for t in headers])
-    headers= re.sub(r'\W+', '', headers)
+    #headers= re.sub(r'\W+', '', headers)
     return content + " " + headers
 
 
@@ -51,9 +51,6 @@ def process_tfid(document: str):
     stemmed = [stemmer.stem(word) for word in document]
     tfids = {}
     for word in stemmed:
-        #for letter in word:
-        #    if bool(re.match(r'[^\x20-\x7F]+',letter)) == True:
-        #        word.replace(letter,"")
         if word in tfids: 
             tfids[word] += 1
         else: 
@@ -80,11 +77,8 @@ def processFolder(path):
         current_doc = len(docID)
         docID.append({'id': current_doc, 'url': path + '/' + site})
         word_file = parse_json(site)
-        #simhash_words = Simhash(word_file) #FIX THIS UP
-        #if len(hashed.get_near_dups(simhash_words)) <= 0:
-            #hashed.add(site, simhash_words)
-        tf_dict = process_tfid(word_file) # was indented
-        combine(tf_dict, current_doc) #was indented
+        tf_dict = process_tfid(word_file) 
+        combine(tf_dict, current_doc) 
     os.chdir('..') #leave the current directory
 
 #starts the processing of the DEV file
@@ -94,19 +88,20 @@ def process():
     for f in os.listdir(os.getcwd()):
         if os.path.isdir(f):
             processFolder(f)
-        if len(invertedIndex) > 200000:
-            writeToFile(index_count)
-            index_count += 1
+        #if len(invertedIndex) > 200000:
+        #    writeToFile(index_count)
+        #    index_count += 1
     if len(invertedIndex) > 0:
         writeToFile(index_count)
 
+#write to an index file
 def writeToFile(count: int):
     with open(indexpath + "\index" + str(count) + ".txt", "w", encoding="utf-8") as file:
         file.write(str(invertedIndex))
     #clean_print()
     invertedIndex.clear()
 
-
+#creates 
 def createIndex():
     #index_count = 1
     #DELETION
