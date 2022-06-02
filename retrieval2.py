@@ -83,10 +83,11 @@ def get_scores(input):
         for word, norm_tfidf in normalized_query_vector.items():
             scores[doc_id] += norm_tfidf * doc_vector[word] if word in doc_vector.keys() else 0.0
 
+
     # print(query_vector)
     # print(normalized_query_vector)
-    # # print(document_vectors)
-    # print(normalized_document_vectors)
+    # print(list(document_vectors.items())[:10])
+    # print(list(normalized_document_vectors.items())[:10])
     return scores
 
 def parse_index(letter, word):
