@@ -42,7 +42,7 @@ def get_posting(input, exact):
 def get_scores(input):
     """Using the lnc.ltc to ranks scores"""
 
-    query_vector = defaultdict(int)
+    query_vector = defaultdict(float)
     document_vectors = defaultdict(dict)
     scores = defaultdict(float)
 
